@@ -124,7 +124,7 @@ def main():
     # use a higher learning rate to learn the calibration quickly
     # since it is only learned using a small number of examples / steps
     # we do not want to learn it using target set data
-    adj_opt = torch.optim.Adam(list(adjust.parameters()), 0.01)
+    adj_opt = torch.optim.Adam(list(adjust.parameters()), 0.01)     # Recall that the local weights are learnt with base examples
     cudnn.benchmark = True
 
     # define the models to use
@@ -316,12 +316,14 @@ def train(train_loader, model, distill_data, distill_labels, criterion, data_opt
                             for image in distill_data[idx].cpu()]).to(device=device)
         lb_i = distill_labels[idx]
 
+        # this is for the local weight, line 9 of Algorithm 1
         # solve the problem to find local weights w_l that minimize L(f_w_l(f_theta (x~')), y~')$
         feature = model(fi_i)
         feature_add_bias = torch.cat(
             (feature, torch.ones((args.inner_batch_size, 1), device=device)), 1)
         w_local = get_local_weights(feature_add_bias, lb_i, device)
 
+        # Now update the global weight
         # update w <-- (1 - alpha) w + w_l (pseudo-gradient)
         w = (1 - 0.01) * w.detach() + 0.01 * w_local
 
