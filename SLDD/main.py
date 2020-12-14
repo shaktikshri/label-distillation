@@ -1,10 +1,4 @@
 from __future__ import print_function
-
-from os.path import dirname, realpath
-import sys
-sys.path.append(dirname(realpath(__file__)))
-
-
 import time
 import torch
 import torch.nn.functional as F
